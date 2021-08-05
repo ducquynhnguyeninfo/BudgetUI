@@ -1,22 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_budget_ui/values/size_config.dart';
 
-class BarChart extends StatelessWidget {
+class BarChart extends StatefulWidget {
   final List<double> expenses;
+  final Animation<double> animation;
 
-  const BarChart(this.expenses, {Key? key}) : super(key: key);
+  const BarChart(this.expenses, {Key? key, required this.animation})
+      : super(key: key);
+
+  @override
+  _BarChartState createState() => _BarChartState();
+}
+
+class _BarChartState extends State<BarChart>
+    with SingleTickerProviderStateMixin {
+  late Animation<double> animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    animation =
+        CurvedAnimation(parent: widget.animation, curve: Curves.easeInOut);
+  }
 
   @override
   Widget build(BuildContext context) {
     double mostExpensive = 0;
 
-    expenses.forEach((element) {
+    widget.expenses.forEach((element) {
       if (element > mostExpensive) {
         mostExpensive = element;
       }
     });
+    // animationController.forward();
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Text('Weekly spending',
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
@@ -40,40 +60,67 @@ class BarChart extends StatelessWidget {
                 )),
           ],
         ),
-        SizedBox(height: 30),
-        FittedBox(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Bar(
-                  label: 'Sun',
-                  amountSpent: expenses[0],
-                  mostExpensive: mostExpensive),
-              Bar(
-                  label: 'Mon',
-                  amountSpent: expenses[1],
-                  mostExpensive: mostExpensive),
-              Bar(
-                  label: 'Tue',
-                  amountSpent: expenses[2],
-                  mostExpensive: mostExpensive),
-              Bar(
-                  label: 'Wed',
-                  amountSpent: expenses[3],
-                  mostExpensive: mostExpensive),
-              Bar(
-                  label: 'Thus',
-                  amountSpent: expenses[4],
-                  mostExpensive: mostExpensive),
-              Bar(
-                  label: 'Fri',
-                  amountSpent: expenses[5],
-                  mostExpensive: mostExpensive),
-              Bar(label: 'Sat', amountSpent: expenses[6], mostExpensive: 200),
-            ],
-          ),
-        )
+        SizedBox(height: 20),
+        LayoutBuilder(builder: (context, constraints) {
+          return Container(
+              // color: Colors.red,
+              width: constraints.maxWidth,
+              height: constraints.maxWidth * 2 / 3,
+              alignment: Alignment.bottomCenter,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.bottomCenter,
+                child: Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Bar(
+                      label: 'Sun',
+                      amountSpent: widget.expenses[0],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                    Bar(
+                      label: 'Mon',
+                      amountSpent: widget.expenses[1],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                    Bar(
+                      label: 'Tue',
+                      amountSpent: widget.expenses[2],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                    Bar(
+                      label: 'Wed',
+                      amountSpent: widget.expenses[3],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                    Bar(
+                      label: 'Thus',
+                      amountSpent: widget.expenses[4],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                    Bar(
+                      label: 'Fri',
+                      amountSpent: widget.expenses[5],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                    Bar(
+                      label: 'Sat',
+                      amountSpent: widget.expenses[6],
+                      mostExpensive: mostExpensive,
+                      animation: animation,
+                    ),
+                  ],
+                ),
+              ));
+        })
       ],
     );
   }
@@ -83,28 +130,31 @@ class Bar extends StatelessWidget {
   final String label;
   final double amountSpent;
   final double mostExpensive;
-
-  final double _maxBarHeight = 100.0;
+  final Animation<double> animation;
 
   const Bar(
       {Key? key,
       required this.label,
       required this.amountSpent,
-      required this.mostExpensive})
+      required this.mostExpensive,
+      required this.animation})
       : super(key: key);
+
+  final double _maxBarHeight = 150.0;
 
   @override
   Widget build(BuildContext context) {
     final barHeight = amountSpent / mostExpensive * _maxBarHeight;
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text('\$${amountSpent.toStringAsFixed(2)}',
+        Text('\$${(amountSpent * animation.value).toStringAsFixed(1)}',
             style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Container(
-            height: barHeight,
+            height: barHeight * animation.value,
             width: SizeConfig.barThickness,
             decoration: BoxDecoration(
                 color: Theme.of(context).primaryColor,

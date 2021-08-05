@@ -13,17 +13,41 @@ class CategoryPage extends StatefulWidget {
   _CategoryPageState createState() => _CategoryPageState();
 }
 
-class _CategoryPageState extends State<CategoryPage> {
+class _CategoryPageState extends State<CategoryPage>
+    with SingleTickerProviderStateMixin {
+  double totalSpent = 0.0;
+  double amountRemain = 0.0;
+  double percentRemain = 0.0;
+
+  late final AnimationController animationController;
+  late final Animation _animation;
+
   @override
-  Widget build(BuildContext context) {
-    double totalSpent = 0.0;
+  void initState() {
+    super.initState();
+
     widget.category.expenses.forEach((element) {
       totalSpent += element.cost;
     });
 
-    final double amountRemain = widget.category.maxAmount - totalSpent;
-    final double percentRemain = amountRemain / widget.category.maxAmount;
+    amountRemain = widget.category.maxAmount - totalSpent;
+    percentRemain = amountRemain / widget.category.maxAmount;
 
+    animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    );
+    animationController.addListener(() {
+      setState(() {});
+    });
+
+    _animation =
+        CurvedAnimation(parent: animationController, curve: Curves.easeInSine);
+    animationController.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.category.name),
@@ -58,19 +82,27 @@ class _CategoryPageState extends State<CategoryPage> {
             BoxShadow(
                 color: Colors.black12, offset: Offset(0, 2), blurRadius: 6.0)
           ]),
-      child: CustomPaint(
-        foregroundPainter: RadialPainter(
-            bgColor: Colors.grey[200]!,
-            lineColor: ColorHelper.getColor(percentRemain),
-            thickness: 18,
-            percent: percentRemain),
-        child: Center(
-          child: Text(
-            '\$${amountRemain.toStringAsFixed(2)} / \$${widget.category.maxAmount.toStringAsFixed(1)}',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+      child: LayoutBuilder(builder: (context, constraints) {
+        double spentPercent = 1.0 - percentRemain;
+
+        double displayPercent = 1.0 - _animation.value * spentPercent;
+        double displayAmount =
+            widget.category.maxAmount - _animation.value * totalSpent;
+
+        return CustomPaint(
+          foregroundPainter: RadialPainter(
+              bgColor: Colors.grey[200]!,
+              lineColor: ColorHelper.getColor(percentRemain),
+              thickness: SizeConfig.barThickness,
+              percent: displayPercent),
+          child: Center(
+            child: Text(
+              '\$${displayAmount.toStringAsFixed(2)} / \$${widget.category.maxAmount.toStringAsFixed(1)}',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 
@@ -100,5 +132,11 @@ class _CategoryPageState extends State<CategoryPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    animationController.dispose();
   }
 }

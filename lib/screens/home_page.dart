@@ -11,15 +11,26 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   var categories = [];
   var weeklySpending = <double>[];
+  late AnimationController animationController;
 
   @override
   void initState() {
     super.initState();
-    categories = getCategories();
-    weeklySpending = getWeeklySpending();
+
+    animationController = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 2500));
+
+    animationController.addListener(() {
+      print('ctrl ' + animationController.value.toStringAsFixed(4));
+      setState(() {});
+    });
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      _loadData();
+    });
   }
 
   @override
@@ -27,10 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: () async {
-          setState(() {
-            categories = getCategories();
-            weeklySpending = getWeeklySpending();
-          });
+          _loadData();
         },
         child: CustomScrollView(
           slivers: [
@@ -63,12 +71,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         ]),
                     margin: EdgeInsets.all(10),
                     padding: EdgeInsets.all(10),
-                    child: BarChart(weeklySpending),
+                    child: BarChart(weeklySpending,
+                        animation: animationController),
                   );
                 } else {
                   final Category category = categories[index - 1];
 
-                  return CategoryWidget(category);
+                  return CategoryWidget(category,
+                      animation: animationController);
                 }
               }, childCount: 1 + categories.length),
             )
@@ -76,5 +86,19 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  void _loadData() {
+    setState(() {
+      categories = getCategories();
+      weeklySpending = getWeeklySpending();
+    });
+    animationController.forward(from: 0);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    animationController.dispose();
   }
 }
