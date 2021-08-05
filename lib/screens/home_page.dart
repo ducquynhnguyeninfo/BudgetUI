@@ -12,54 +12,68 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  var categories = [];
+  var weeklySpending = <double>[];
+
   @override
   void initState() {
     super.initState();
+    categories = getCategories();
+    weeklySpending = getWeeklySpending();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            forceElevated: true,
-            floating: true,
-            expandedHeight: 100,
-            leading: Icon(Icons.settings),
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text('Budget'),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {
+            categories = getCategories();
+            weeklySpending = getWeeklySpending();
+          });
+        },
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              forceElevated: true,
+              floating: true,
+              expandedHeight: 100,
+              leading: Icon(Icons.settings),
+              flexibleSpace: FlexibleSpaceBar(
+                title: Text('Budget UI'),
+              ),
+              title: Text('Full to reload'),
+              actions: [IconButton(onPressed: () {}, icon: Icon(Icons.add))],
             ),
-            actions: [IconButton(onPressed: () {}, icon: Icon(Icons.add))],
-          ),
-          SliverList(
-            delegate:
-                SliverChildBuilderDelegate((BuildContext context, int index) {
-              if (index == 0) {
-                return Container(
-                  // height: 200,
+            SliverList(
+              delegate:
+                  SliverChildBuilderDelegate((BuildContext context, int index) {
+                if (index == 0) {
+                  return Container(
+                    // height: 200,
 
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black12,
-                            offset: Offset(0, 2),
-                            blurRadius: 6.0)
-                      ]),
-                  margin: EdgeInsets.all(10),
-                  padding: EdgeInsets.all(10),
-                  child: BarChart(weeklySpending),
-                );
-              } else {
-                final Category category = categories[index - 1];
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black12,
+                              offset: Offset(0, 2),
+                              blurRadius: 6.0)
+                        ]),
+                    margin: EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10),
+                    child: BarChart(weeklySpending),
+                  );
+                } else {
+                  final Category category = categories[index - 1];
 
-                return CategoryWidget(category);
-              }
-            }, childCount: 1 + categories.length),
-          )
-        ],
+                  return CategoryWidget(category);
+                }
+              }, childCount: 1 + categories.length),
+            )
+          ],
+        ),
       ),
     );
   }

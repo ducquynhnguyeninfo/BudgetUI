@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_budget_ui/values/size_config.dart';
-import 'package:flutter_budget_ui/values/values.dart';
-
-import '../models/expense_model.dart';
 
 class BarChart extends StatelessWidget {
   final List<double> expenses;
@@ -21,7 +18,8 @@ class BarChart extends StatelessWidget {
 
     return Column(
       children: [
-        Text('weekly spending'),
+        Text('Weekly spending',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18)),
         SizedBox(height: 5.0),
         Row(
           children: [
@@ -101,7 +99,8 @@ class Bar extends StatelessWidget {
 
     return Column(
       children: [
-        Text('\$${amountSpent.toStringAsFixed(2)}'),
+        Text('\$${amountSpent.toStringAsFixed(2)}',
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Container(
@@ -114,7 +113,7 @@ class Bar extends StatelessWidget {
         ),
         Text(
           label,
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
         ),
       ],
     );
