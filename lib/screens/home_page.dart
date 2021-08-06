@@ -23,11 +23,6 @@ class _MyHomePageState extends State<MyHomePage>
 
     animationController = AnimationController(
         vsync: this, duration: Duration(milliseconds: 2500));
-
-    animationController.addListener(() {
-      print('ctrl ' + animationController.value.toStringAsFixed(4));
-      setState(() {});
-    });
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       _loadData();
     });
@@ -50,7 +45,6 @@ class _MyHomePageState extends State<MyHomePage>
               flexibleSpace: FlexibleSpaceBar(
                 title: Text('Budget UI'),
               ),
-              title: Text('Full to reload'),
               actions: [IconButton(onPressed: () {}, icon: Icon(Icons.add))],
             ),
             SliverList(

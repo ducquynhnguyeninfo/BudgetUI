@@ -4,40 +4,28 @@ import 'package:flutter_budget_ui/models/category_model.dart';
 import 'package:flutter_budget_ui/screens/category_page.dart';
 import 'package:flutter_budget_ui/values/size_config.dart';
 
-class CategoryWidget extends StatefulWidget {
+class CategoryWidget extends AnimatedWidget {
   final Category category;
-  final Animation? animation;
 
-  const CategoryWidget(this.category, {this.animation, Key? key})
-      : super(key: key);
-
-  @override
-  _CategoryWidgetState createState() => _CategoryWidgetState();
-}
-
-class _CategoryWidgetState extends State<CategoryWidget> {
-  double percentRemain = 0.0;
-  double totalSpent = 0.0;
-  @override
-  void initState() {
-    super.initState();
-
-    widget.category.expenses.forEach((element) {
-      totalSpent = element.cost + totalSpent;
-    });
-
-    percentRemain =
-        (widget.category.maxAmount - totalSpent) / widget.category.maxAmount;
-  }
+  CategoryWidget(this.category, {required Animation animation, Key? key})
+      : super(key: key, listenable: animation);
 
   @override
   Widget build(BuildContext context) {
     print('rebuild: ${this.runtimeType.toString()} build');
 
+    double totalSpent = 0;
+
+    category.expenses.forEach((element) {
+      totalSpent = element.cost + totalSpent;
+    });
+    final double percentRemain =
+        (category.maxAmount - totalSpent) / category.maxAmount;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return CategoryPage(widget.category);
+          return CategoryPage(category);
         }));
       },
       child: Container(
@@ -59,11 +47,11 @@ class _CategoryWidgetState extends State<CategoryWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.category.name,
+                  category.name,
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
                 Text(
-                  '\$${(widget.category.maxAmount - totalSpent).toStringAsFixed(2)} / \$${widget.category.maxAmount.toStringAsFixed(1)}',
+                  '\$${(category.maxAmount - totalSpent).toStringAsFixed(2)} / \$${category.maxAmount.toStringAsFixed(1)}',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -72,14 +60,15 @@ class _CategoryWidgetState extends State<CategoryWidget> {
               padding:
                   const EdgeInsets.symmetric(vertical: SizeConfig.padding * 2),
               child: LayoutBuilder(builder: (context, constraints) {
-                var maxWidth = constraints.maxWidth;
+                final animation = listenable as Animation<double>;
+
+                final maxWidth = constraints.maxWidth;
                 var remainWidth = percentRemain * maxWidth;
                 if (remainWidth < 0) remainWidth = 0;
 
-                var spentWith = maxWidth - remainWidth;
+                final spentWith = maxWidth - remainWidth;
 
-                var displayWidth =
-                    maxWidth - (spentWith * widget.animation!.value);
+                var displayWidth = maxWidth - (spentWith * animation.value);
 
                 print('rebuild: ${this.runtimeType.toString()} LayoutBuilder');
 

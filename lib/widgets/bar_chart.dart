@@ -1,40 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_budget_ui/values/size_config.dart';
 
-class BarChart extends StatefulWidget {
+class BarChart extends StatelessWidget {
   final List<double> expenses;
-  final Animation<double> animation;
+  late final Animation<double> animation;
 
-  const BarChart(this.expenses, {Key? key, required this.animation})
-      : super(key: key);
-
-  @override
-  _BarChartState createState() => _BarChartState();
-}
-
-class _BarChartState extends State<BarChart>
-    with SingleTickerProviderStateMixin {
-  late Animation<double> animation;
-
-  @override
-  void initState() {
-    super.initState();
-
-    animation =
-        CurvedAnimation(parent: widget.animation, curve: Curves.easeInOut);
+  BarChart(this.expenses, {Key? key, required Animation<double> animation})
+      : super(key: key) {
+    this.animation =
+        CurvedAnimation(parent: animation, curve: Curves.easeInOut);
   }
 
   @override
   Widget build(BuildContext context) {
     double mostExpensive = 0;
 
-    widget.expenses.forEach((element) {
+    expenses.forEach((element) {
       if (element > mostExpensive) {
         mostExpensive = element;
       }
     });
-    // animationController.forward();
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -63,7 +48,6 @@ class _BarChartState extends State<BarChart>
         SizedBox(height: 20),
         LayoutBuilder(builder: (context, constraints) {
           return Container(
-              // color: Colors.red,
               width: constraints.maxWidth,
               height: constraints.maxWidth * 2 / 3,
               alignment: Alignment.bottomCenter,
@@ -74,50 +58,57 @@ class _BarChartState extends State<BarChart>
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Bar(
-                      label: 'Sun',
-                      amountSpent: widget.expenses[0],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                    Bar(
-                      label: 'Mon',
-                      amountSpent: widget.expenses[1],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                    Bar(
-                      label: 'Tue',
-                      amountSpent: widget.expenses[2],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                    Bar(
-                      label: 'Wed',
-                      amountSpent: widget.expenses[3],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                    Bar(
-                      label: 'Thus',
-                      amountSpent: widget.expenses[4],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                    Bar(
-                      label: 'Fri',
-                      amountSpent: widget.expenses[5],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                    Bar(
-                      label: 'Sat',
-                      amountSpent: widget.expenses[6],
-                      mostExpensive: mostExpensive,
-                      animation: animation,
-                    ),
-                  ],
+                  children: expenses.isEmpty
+                      ? [
+                          const SizedBox(
+                            width: 100,
+                            height: 100,
+                          )
+                        ]
+                      : [
+                          Bar(
+                            label: 'Sun',
+                            amountSpent: expenses[0],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                          Bar(
+                            label: 'Mon',
+                            amountSpent: expenses[1],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                          Bar(
+                            label: 'Tue',
+                            amountSpent: expenses[2],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                          Bar(
+                            label: 'Wed',
+                            amountSpent: expenses[3],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                          Bar(
+                            label: 'Thus',
+                            amountSpent: expenses[4],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                          Bar(
+                            label: 'Fri',
+                            amountSpent: expenses[5],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                          Bar(
+                            label: 'Sat',
+                            amountSpent: expenses[6],
+                            mostExpensive: mostExpensive,
+                            animation: animation,
+                          ),
+                        ],
                 ),
               ));
         })
@@ -126,25 +117,25 @@ class _BarChartState extends State<BarChart>
   }
 }
 
-class Bar extends StatelessWidget {
+class Bar extends AnimatedWidget {
   final String label;
   final double amountSpent;
   final double mostExpensive;
-  final Animation<double> animation;
 
   const Bar(
       {Key? key,
       required this.label,
       required this.amountSpent,
       required this.mostExpensive,
-      required this.animation})
-      : super(key: key);
+      required Animation<double> animation})
+      : super(key: key, listenable: animation);
 
   final double _maxBarHeight = 150.0;
 
   @override
   Widget build(BuildContext context) {
     final barHeight = amountSpent / mostExpensive * _maxBarHeight;
+    Animation<double> animation = listenable as Animation<double>;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
